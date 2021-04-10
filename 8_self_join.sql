@@ -73,62 +73,30 @@ SELECT DISTINCT stops.name, company, num
  ORDER BY num, pos;
 
 -- Find the routes involving two buses that can go from Craiglockhart to Lochend. Show the bus no. and company for the first bus, the name of the stop for the transfer, and the bus no. and company for the second bus. 
-
-SELECT stops.name
-  FROM stops
- WHERE stops.name IN (
-   SELECT DISTINCT stops.name
+-- This answer was solved with significant help from stack exchange and other Odin Project member answers as this was a very advanced (and novel) use of SQL that had not been covered before in the course.
+SELECT 1st.num, 1st.company, stops.name, 2nd.num, 2nd.company
+  FROM (
+   SELECT a.company, a.num, b.stop
      FROM route a
-      JOIN stops ON stops.id = a.stop
-    WHERE a.num IN (
-      SELECT c.num
-        FROM route c
-         JOIN stops ON stops.id = c.stop
-    WHERE stops.name = 'Lochend'))
- AND stops.name IN (
-   SELECT DISTINCT stops.name
-    FROM route a
-     JOIN stops ON stops.id = a.stop
-    WHERE a.num IN (
-     SELECT c.num
-       FROM route c
-        JOIN stops ON stops.id = c.stop
-     WHERE stops.name = 'Craiglockhart'))
+       JOIN route b 
+        ON a.company = b.company AND a.num = b.num
+    WHERE a.stop = (
+      SELECT id FROM stops 
+       WHERE name = 'Craiglockhart')) AS 1st
+  JOIN (
+   SELECT a.company, a.num, b.stop
+     FROM route a
+       JOIN route b 
+        ON a.company = b.company AND a.num = b.num
+    WHERE a.stop = (
+      SELECT id FROM stops 
+       WHERE name = 'Lochend')) AS 2nd
+  ON 1st.stop = 2nd.stop
+  JOIN stops ON stops.id = 1st.stop
+ ORDER BY 1st.num, stops.name, 2nd.num
 
 
-SELECT num, company
-  FROM route
- WHERE stop = 53; 147
-
-  SELECT DISTINCT stops.name
-    FROM route
-    JOIN stops ON id = stop
-  WHERE num IN (
-      SELECT num
-        FROM route
-        JOIN stops ON id = stop
-      WHERE name = 'Lochend')
-
-SELECT DISTINCT stopa.name
-  FROM route a
-   JOIN route b
-    ON a.num = b.num AND a.company = b.company
-   JOIN stops stopa ON stopa.id = a.stop
- WHERE stopa.name IN(
-  SELECT DISTINCT stops.name
-    FROM route
-    JOIN stops ON id = stop
-  WHERE num IN (
-      SELECT num
-        FROM route
-        JOIN stops ON id = stop
-      WHERE name = 'Craiglockhart'))
- AND stopa.name IN(
-  SELECT DISTINCT stops.name
-    FROM route
-    JOIN stops ON id = stop
-  WHERE num IN (
-      SELECT num
-        FROM route
-        JOIN stops ON id = stop
-      WHERE name = 'Lochend'))
+-- Quiz answers
+-- 1) 3
+-- 2) 5
+-- 3) 4
